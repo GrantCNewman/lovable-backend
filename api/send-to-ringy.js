@@ -1,15 +1,15 @@
 export default async function handler(req, res) {
-  // ✅ Step 1: Allow requests from your frontend domain (Lovable)
+  // ✅ CORS Headers
   res.setHeader('Access-Control-Allow-Origin', 'https://69830664-34f8-45fc-a103-75b5ff1557e4.lovableproject.com');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // ✅ Step 2: Respond early to preflight request
+  // ✅ Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // ✅ Step 3: Only allow POST
+  // ✅ Only accept POST
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Only POST requests allowed' });
   }
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
   try {
     // ✅ Send to Ringy
-    const ringyRes = await fetch('https://app.ringy.com/api/public/leads/new-lead', {
+    const ringyResponse = await fetch('https://app.ringy.com/api/public/leads/new-lead', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -26,17 +26,17 @@ export default async function handler(req, res) {
       body: JSON.stringify(body)
     });
 
-    const ringyText = await ringyRes.text();
+    const ringyText = await ringyResponse.text();
 
-    if (!ringyRes.ok) {
-      return res.status(ringyRes.status).json({
+    if (!ringyResponse.ok) {
+      return res.status(ringyResponse.status).json({
         message: 'Error sending to Ringy',
         error: ringyText
       });
     }
 
-    // ✅ Also send to Google Sheets
-    await fetch('https://api.sheetbest.com/sheets/4393fe29-9352-4fd1-a7ea-226c4729c6b2', {
+    // ✅ Send to Google Sheets via SheetBest
+    const sheetResponse = await fetch('https://api.sheetbest.com/sheets/4393fe29-9352-4fd1-a7ea-226c4729c6b2', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -44,7 +44,13 @@ export default async function handler(req, res) {
       body: JSON.stringify(body)
     });
 
-    // ✅ Respond with Ringy response
+    if (!sheetResponse.ok) {
+      const sheetText = await sheetResponse.text();
+      console.error("❌ Failed to send to SheetBest:", sheetText);
+      // Still return success to frontend, but log SheetBest issue
+    }
+
+    // ✅ All good
     return res.status(200).json(JSON.parse(ringyText));
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
