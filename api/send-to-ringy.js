@@ -11,29 +11,15 @@ export default async function handler(req, res) {
       phone_number,
       full_name,
       email,
-      birthday,
       city,
       state,
       street_address,
+      birthday,
       lead_source
     } = req.body;
 
-    // Log incoming payload for debugging
-    console.log("📦 Incoming Request Body:", req.body);
-
-    // Ensure all required fields are present
-    if (!phone_number || !full_name || !email || !birthday || !city || !state || !street_address || !lead_source) {
-      console.warn("⚠️ Missing field(s):", {
-        phone_number,
-        full_name,
-        email,
-        birthday,
-        city,
-        state,
-        street_address,
-        lead_source
-      });
-      return res.status(400).json({ error: "Missing required fields for Ringy" });
+    if (!phone_number || !full_name || !email || !city || !state || !street_address || !birthday || !lead_source) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
     const ringyPayload = {
@@ -42,17 +28,14 @@ export default async function handler(req, res) {
       phone_number,
       full_name,
       email,
-      birthday,
       city,
       state,
       street_address,
+      birthday,
       lead_source
     };
 
-    // Log what’s being sent to Ringy
-    console.log("🚀 Sending to Ringy:", ringyPayload);
-
-    const ringyRes = await fetch("https://app.ringy.com/api/public/leads/new-lead", {
+    const response = await fetch("https://app.ringy.com/api/public/leads/new-lead", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -60,21 +43,16 @@ export default async function handler(req, res) {
       body: JSON.stringify(ringyPayload)
     });
 
-    const data = await ringyRes.json();
+    const data = await response.json();
 
-    if (!ringyRes.ok) {
-      console.error("❌ Ringy Error:", data);
-      return res.status(ringyRes.status).json({
-        message: "Error sending to Ringy",
-        error: data,
-        sentPayload: ringyPayload // include what you sent
-      });
+    if (!response.ok) {
+      console.error("❌ Ringy API Error:", data);
+      return res.status(response.status).json({ message: "Error sending to Ringy", error: data });
     }
 
-    console.log("✅ Ringy response:", data);
     return res.status(200).json({ success: true, vendorResponseId: data.vendorResponseId });
-  } catch (err) {
-    console.error("❌ Server Error:", err.message);
-    return res.status(500).json({ message: "Server error", error: err.message });
+  } catch (error) {
+    console.error("❌ Server Error:", error.message);
+    return res.status(500).json({ message: "Server Error", error: error.message });
   }
 }
