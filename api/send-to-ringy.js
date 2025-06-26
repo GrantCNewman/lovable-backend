@@ -8,30 +8,32 @@ export default async function handler(req, res) {
 
   try {
     const {
-      full_name,
       phone_number,
+      full_name,
       email,
-      birthday,
       city,
       state,
       street_address,
+      birthday,
       lead_source
     } = req.body;
 
-    if (!full_name || !phone_number || !email || !birthday || !city || !state || !street_address || !lead_source) {
+    // Validate required fields
+    if (!phone_number || !full_name || !email || !city || !state || !street_address || !birthday || !lead_source) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const payload = {
+    // Create payload in Ringy's expected format
+    const ringyPayload = {
       sid: process.env.RINGY_SID,
       authToken: process.env.RINGY_AUTH_TOKEN,
-      full_name,
       phone_number,
+      full_name,
       email,
-      birthday,
       city,
       state,
       street_address,
+      birthday,
       lead_source
     };
 
@@ -40,19 +42,19 @@ export default async function handler(req, res) {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(ringyPayload)
     });
 
     const data = await ringyRes.json();
 
     if (!ringyRes.ok) {
-      console.error("❌ Ringy Error:", data);
-      return res.status(ringyRes.status).json({ message: "Error sending to Ringy", error: data });
+      console.error("❌ Ringy error:", data);
+      return res.status(ringyRes.status).json({ message: "Ringy rejected the request", error: data });
     }
 
     return res.status(200).json({ success: true, vendorResponseId: data.vendorResponseId });
   } catch (err) {
     console.error("❌ Server error:", err.message);
-    return res.status(500).json({ message: "Server error", error: err.message });
+    return res.status(500).json({ message: "Internal server error", error: err.message });
   }
 }
