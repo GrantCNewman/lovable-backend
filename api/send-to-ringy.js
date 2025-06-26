@@ -18,12 +18,24 @@ export default async function handler(req, res) {
       lead_source
     } = req.body;
 
+    // Log incoming payload for debugging
+    console.log("📦 Incoming Request Body:", req.body);
+
     // Ensure all required fields are present
     if (!phone_number || !full_name || !email || !birthday || !city || !state || !street_address || !lead_source) {
+      console.warn("⚠️ Missing field(s):", {
+        phone_number,
+        full_name,
+        email,
+        birthday,
+        city,
+        state,
+        street_address,
+        lead_source
+      });
       return res.status(400).json({ error: "Missing required fields for Ringy" });
     }
 
-    // Only send the exact fields Ringy expects
     const ringyPayload = {
       sid: process.env.RINGY_SID,
       authToken: process.env.RINGY_AUTH_TOKEN,
@@ -37,6 +49,9 @@ export default async function handler(req, res) {
       lead_source
     };
 
+    // Log what’s being sent to Ringy
+    console.log("🚀 Sending to Ringy:", ringyPayload);
+
     const ringyRes = await fetch("https://app.ringy.com/api/public/leads/new-lead", {
       method: "POST",
       headers: {
@@ -49,7 +64,11 @@ export default async function handler(req, res) {
 
     if (!ringyRes.ok) {
       console.error("❌ Ringy Error:", data);
-      return res.status(ringyRes.status).json({ message: "Error sending to Ringy", error: data });
+      return res.status(ringyRes.status).json({
+        message: "Error sending to Ringy",
+        error: data,
+        sentPayload: ringyPayload // include what you sent
+      });
     }
 
     console.log("✅ Ringy response:", data);
