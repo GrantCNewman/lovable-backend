@@ -1,9 +1,9 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/send-to-ringy.js", "use": "@vercel/node" }
+    { "src": "api/send-to-ringy.mjs", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/api/send-to-ringy", "dest": "api/send-to-ringy.js" }
+    { "src": "/api/send-to-ringy", "dest": "api/send-to-ringy.mjs" }
   ]
 }
