@@ -1,9 +1,27 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/send-to-ringy.js", "use": "@vercel/node" }
+    {
+      "src": "api/send-to-ringy.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/unsubscribe.js",
+      "use": "@vercel/node"
+    }
   ],
   "routes": [
-    { "src": "/api/send-to-ringy", "dest": "api/send-to-ringy.js" }
+    {
+      "src": "/api/send-to-ringy",
+      "dest": "api/send-to-ringy.js"
+    },
+    {
+      "src": "/unsubscribe",
+      "dest": "api/unsubscribe.js"
+    },
+    {
+      "src": "/api/unsubscribe",
+      "dest": "api/unsubscribe.js"
+    }
   ]
 }
